@@ -7,11 +7,12 @@ import {
   getBlog,
   getBlogItem,
 } from "../controllers/blogControllers.js";
+import { isAuth } from "../middleware/isAuth.js";
 import uploadMiddleware from "../middleware/MulterMiddleware.js";
 
 const router = express.Router();
 
-router.post("/", uploadMiddleware.single("image"), createBlog);
+router.post("/", isAuth, uploadMiddleware.single("image"), createBlog);
 router.get("/", getBlog);
 router.get("/:blogId", getBlogItem);
 

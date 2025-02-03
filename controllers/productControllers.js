@@ -1,8 +1,12 @@
+import mongoose from "mongoose";
+
 import Product from "../models/productModel.js";
 
 export const getProducts = async (req, res) => {
   try {
-    res.status(200).json({});
+    const products = await Product.find();
+
+    res.status(200).json(products);
   } catch (error) {
     res.status(400).json({ msg: error });
   }
@@ -10,44 +14,48 @@ export const getProducts = async (req, res) => {
 
 export const getProduct = async (req, res) => {
   try {
-    const { productId } = req.params;
+    const { productname } = req.params;
 
-    res.status(200).json({ msg: `get product ${productId}` });
+    const product = await Product.findOne({ productname });
+
+    if (!product) {
+      return res.status(404).json({ msg: "Product not found" });
+    }
+
+    res.status(200).json(product);
   } catch (error) {
-    res.status(400).json({ msg: error });
+    res.status(400).json({ msg: error.message });
   }
 };
 
 export const createProduct = async (req, res) => {
   try {
-    const { productname, subtitle, description, images, category, etsyLink } =
-      req.body;
+    const { productname, subtitle, description, category, etsyLink } = req.body;
 
-    if (
-      !productname ||
-      !images ||
-      images.length === 0 ||
-      !category ||
-      !etsyLink
-    ) {
+    if (!productname || !subtitle || !description || !category || !etsyLink) {
       return res.status(400).json({ message: "All fields are required." });
+    }
+
+    const imagePaths = req.files.map((file) => file.path);
+
+    if (!req.files || req.files.length === 0) {
+      return res
+        .status(400)
+        .json({ message: "At least one image is required" });
     }
 
     const newProduct = new Product({
       productname,
       subtitle,
       description,
-      images,
+      images: imagePaths,
       category,
       etsyLink,
     });
 
-    const savedProduct = await newProduct.save();
+    await newProduct.save();
 
-    res.status(201).json({
-      message: "Product created successfully!",
-      product: savedProduct,
-    });
+    res.status(201).json(newProduct);
   } catch (error) {
     console.error("Error creating product:", error);
     res.status(500).json({ message: "Server error. Please try again later." });
