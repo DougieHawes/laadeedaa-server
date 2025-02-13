@@ -32,7 +32,7 @@ export const createProduct = async (req, res) => {
   try {
     const { productname, subtitle, description, category, etsyLink } = req.body;
 
-    if (!productname || !subtitle || !description || !category || !etsyLink) {
+    if (!productname || !subtitle || !description || !category) {
       return res.status(400).json({ message: "All fields are required." });
     }
 
